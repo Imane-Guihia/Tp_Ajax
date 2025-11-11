@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chargement des données avec fetch()</title>
+    <script src="script2.js"></script>
+  </head>
+  <body onload="load_contries()">
+    <h1>Statistiques COVID-19 par pays</h1>
+
+    <div class="row">
+      <label for="select_countries">Choisir un pays :</label>
+      <select id="select_countries" onchange="load_data_covid()"></select>
+    </div>
+
+    <div id="error"></div>
+
+    <div id="result" class="card" style="display: none">
+      <h2>
+        <span id="countryLabel"></span>
+      </h2>
+      <p><strong>Cas totaux :</strong><span id="cases">0</span></p>
+      <p><strong>Décès :</strong><span id="deaths">0</span></p>
+      <p><strong>Guérisons :</strong><span id="recovered">0</span></p>
+    </div>
+
+    <script>
+      //Remplit le <select> avec la liste des pays
+
+      //Durant les examens, ce qui nous est de coder est la partie .then() (dans 2 lignes)
+      function load_contries() {
+        fetch("https://disease.sh/v3/covid-19/countries")
+          .then((res) => res.json())
+          .then((data) => {
+            const countrySelect = document.getElementById("select_countries");
+            countrySelect.innerHTML = "";
+
+            data.forEach((c) => {
+              const opt = document.createElement("option");
+              opt.value = c.country; //utilisé dans l'URL
+              opt.textContent = c.country; //affiché à l'écran
+              countrySelect.appendChild(opt);
+            });
+          })
+          .catch((err) => {
+            console.error("Erreur :", err);
+            document.getElementById("error").textContent =
+              "Impossible de charger la liste des pays.";
+          });
+      }
+
+      //Charge et affiche les stats du pays sélectionné
+      function load_data_covid() {
+        const country = document.getElementById("select_countries").value;
+        const errorDiv = document.getElementById("error");
+        const resultDiv = document.getElementById("result");
+        errorDiv.textContent = "";
+        resultDiv.style.display = "none";
+        const url =
+          "https://disease.sh/v3/covid-19/countries/" +
+          encodeURIComponent(country);
+
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("countryLabel").textContent = data.country;
+            document.getElementById("cases").textContent = data.cases;
+            document.getElementById("deaths").textContent = data.deaths;
+            document.getElementById("recovered").textContent = data.recovered;
+            resultDiv.style.display = "block";
+          })
+          .catch((error) => {
+            errorDiv.textContent = "Erreur :" + error.message;
+          });
+      }
+    </script>
+  </body>
+</html>
